@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- CUSTOMIZE_TEXT: Page title + meta description -->
+  <title>X — Immersive Creative Studio</title>
+  <meta name="description" content="X Studio — we architect immersive digital worlds." />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <!-- ============ PRELOADER ============ -->
+  <div class="preloader" id="preloader" aria-hidden="true">
+    <div class="preloader__curtain preloader__curtain--a"></div>
+    <div class="preloader__curtain preloader__curtain--b"></div>
+    <div class="preloader__center">
+      <!-- CUSTOMIZE_TEXT: The giant loading glyph -->
+      <span class="preloader__x">X</span>
+      <span class="preloader__tag">LOADING WORLD</span>
+    </div>
+  </div>
+
+  <!-- ============ WEBGL LAYER (behind everything) ============ -->
+  <div id="webgl" class="webgl-layer"></div>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header">
+    <!-- CUSTOMIZE_TEXT: Logo mark -->
+    <a href="#top" class="logo" data-scroll-link>X.</a>
+    <nav class="site-nav">
+      <!-- CUSTOMIZE_TEXT: Menu headings -->
+      <a href="#works" data-scroll-link>Works</a>
+      <a href="#about" data-scroll-link>About</a>
+      <a href="#contact" data-scroll-link>Contact</a>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <h1 class="hero__title">
+        <!-- CUSTOMIZE_TEXT: Hero headline, one line per span -->
+        <span class="line"><span data-reveal>We build worlds</span></span>
+        <span class="line"><span data-reveal>that move people.</span></span>
+      </h1>
+      <p class="hero__sub" data-reveal>
+        <!-- CUSTOMIZE_TEXT: Hero subline -->
+        Immersive &amp; experiential entertainment — realtime 3D, virtual venues, playable stories.
+      </p>
+      <div class="hero__scroll-hint" data-reveal>scroll to explore →</div>
+    </section>
+
+    <!-- ============ ABOUT / VISION ============ -->
+    <section class="about" id="about">
+      <p class="about__kicker" data-reveal>VISION</p>
+      <h2 class="about__title" data-reveal>
+        <!-- CUSTOMIZE_TEXT: Vision statement -->
+        Beyond screens.<br />Into worlds.
+      </h2>
+      <p class="about__body" data-reveal>
+        <!-- CUSTOMIZE_TEXT: About paragraph -->
+        We take the raw power of realtime engines and push it past the borders of games —
+        into concerts, fashion, film and living virtual spaces. Every project is a portal:
+        crafted light, motion and sound, engineered to feel expensive and alive.
+      </p>
+    </section>
+
+    <!-- ============ HORIZONTAL FLYING PORTFOLIO TRACK ============ -->
+    <section class="portfolio-track-section" id="works">
+      <div class="portfolio-pin">
+        <p class="portfolio__kicker">SELECTED WORKS</p>
+        <div class="portfolio-strip">
+
+          <!-- CUSTOMIZE_LINK_1: Paste your Google Drive or Project Link here -->
+          <a class="card" href="[example.com](https://example.com/project-one)" target="_blank" rel="noopener">
+            <div class="card__media">
+              <!-- CUSTOMIZE_MEDIA_1: Change path string to swap card video/image.
+                   For video, replace the <img> with:
+                   <video src="./assets/media/project-1.mp4" autoplay loop muted playsinline></video> -->
+              <img src="[picsum.photos](https://picsum.photos/seed/x-alpha/1200/800)" alt="Project One" loading="lazy" />
+            </div>
+            <div class="card__meta">
+              <span class="card__index">01</span>
+              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <h3 class="card__title">NEON RITUAL</h3>
+              <p class="card__tags">in-game concert · metaverse</p>
+            </div>
+          </a>
+
+          <!-- CUSTOMIZE_LINK_2: Paste your Google Drive or Project Link here -->
+          <a class="card" href="[example.com](https://example.com/project-two)" target="_blank" rel="noopener">
+            <div class="card__media">
+              <!-- CUSTOMIZE_MEDIA_2: Change path string to swap card video/image -->
+              <img src="[picsum.photos](https://picsum.photos/seed/x-beta/1200/800)" alt="Project Two" loading="lazy" />
+            </div>
+            <div class="card__meta">
+              <span class="card__index">02</span>
+              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <h3 class="card__title">VELVET ORBIT</h3>
+              <p class="card__tags">unreal engine · cloud rendering</p>
+            </div>
+          </a>
+
+          <!-- CUSTOMIZE_LINK_3: Paste your Google Drive or Project Link here -->
+          <a class="card" href="[example.com](https://example.com/project-three)" target="_blank" rel="noopener">
+            <div class="card__media">
+              <!-- CUSTOMIZE_MEDIA_3: Change path string to swap card video/image -->
+              <img src="[picsum.photos](https://picsum.photos/seed/x-gamma/1200/800)" alt="Project Three" loading="lazy" />
+            </div>
+            <div class="card__meta">
+              <span class="card__index">03</span>
+              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <h3 class="card__title">GHOST RUNWAY</h3>
+              <p class="card__tags">virtual fashion · mobile</p>
+            </div>
+          </a>
+
+          <!-- CUSTOMIZE_LINK_4: Paste your Google Drive or Project Link here -->
+          <a class="card" href="[example.com](https://example.com/project-four)" target="_blank" rel="noopener">
+            <div class="card__media">
+              <!-- CUSTOMIZE_MEDIA_4: Change path string to swap card video/image -->
+              <img src="[picsum.photos](https://picsum.photos/seed/x-delta/1200/800)" alt="Project Four" loading="lazy" />
+            </div>
+            <div class="card__meta">
+              <span class="card__index">04</span>
+              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <h3 class="card__title">CHROME GARDEN</h3>
+              <p class="card__tags">interactive install · webgl</p>
+            </div>
+          </a>
+
+          <!-- CUSTOMIZE_LINK_5: Paste your Google Drive or Project Link here -->
+          <a class="card" href="[example.com](https://example.com/project-five)" target="_blank" rel="noopener">
+            <div class="card__media">
+              <!-- CUSTOMIZE_MEDIA_5: Change path string to swap card video/image -->
+              <img src="[picsum.photos](https://picsum.photos/seed/x-omega/1200/800)" alt="Project Five" loading="lazy" />
+            </div>
+            <div class="card__meta">
+              <span class="card__index">05</span>
+              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <h3 class="card__title">MIDNIGHT ENGINE</h3>
+              <p class="card__tags">playable story · fortnite</p>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT / OUTRO ============ -->
+    <section class="contact" id="contact">
+      <p class="contact__kicker" data-reveal>CONTACT</p>
+      <h2 class="contact__title" data-reveal>
+        <!-- CUSTOMIZE_TEXT: Contact headline -->
+        Let's architect<br />something impossible.
+      </h2>
+      <!-- CUSTOMIZE_LINK_CONTACT: Your mail address / contact destination -->
+      <a class="contact__cta" href="mailto:hello@example.com" data-reveal>hello@example.com</a>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <!-- CUSTOMIZE_TEXT: Footer line -->
+    <span>© 2026 X Studio</span>
+    <span>Crafted in realtime</span>
+  </footer>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
