@@ -49,7 +49,6 @@ const preloader = document.querySelector("#preloader");
 const preX = document.querySelector(".preloader__x");
 const preTag = document.querySelector(".preloader__tag");
 
-// Entrance runs immediately, before assets finish
 const enterTl = gsap.timeline();
 enterTl
   .fromTo(
@@ -95,3 +94,98 @@ function revealHero() {
     duration: 1.3,
     stagger: 0.12,
     ease: "expo.out"
+  });
+}
+
+// ----------------------------------------------------------------
+// 4. SECTION REVEALS (about + contact lift in on scroll)
+// ----------------------------------------------------------------
+["#about", "#contact"].forEach((sel) => {
+  gsap.to(`${sel} [data-reveal]`, {
+    opacity: 1,
+    y: 0,
+    duration: 1.2,
+    stagger: 0.14,
+    ease: "expo.out",
+    scrollTrigger: {
+      trigger: sel,
+      start: "top 65%",
+      once: true
+    }
+  });
+});
+
+// ----------------------------------------------------------------
+// 5. HORIZONTAL FLYING PORTFOLIO TRACK
+// Pins the section; scroll drives the strip right → left.
+// Cards stay clickable throughout (transforms never block anchors).
+// ----------------------------------------------------------------
+const strip = document.querySelector(".portfolio-strip");
+const trackSection = document.querySelector(".portfolio-track-section");
+
+function stripDistance() {
+  return strip.scrollWidth - window.innerWidth;
+}
+
+gsap.to(strip, {
+  x: () => -stripDistance(),
+  ease: "none",
+  scrollTrigger: {
+    trigger: trackSection,
+    start: "top top",
+    // CUSTOMIZE_TRACK_LENGTH: multiplier = how long the fly-past lasts
+    end: () => `+=${stripDistance() * 1.15}`,
+    pin: true,
+    scrub: 1.2,          // slight lag = cinematic momentum
+    anticipatePin: 1,
+    invalidateOnRefresh: true
+  }
+});
+
+// ----------------------------------------------------------------
+// 6. BIND THE 3D MESH TO SCROLL POSITION
+// Global progress feeds the shader; per-section tweens reframe it.
+// ----------------------------------------------------------------
+ScrollTrigger.create({
+  trigger: document.body,
+  start: "top top",
+  end: "bottom bottom",
+  onUpdate: (self) => scene3d.setScroll(self.progress)
+});
+
+// Hero → About: mesh drifts right and shrinks slightly
+gsap.to(scene3d.target, {
+  x: 1.4,
+  scale: 0.75,
+  scrollTrigger: {
+    trigger: "#about",
+    start: "top bottom",
+    end: "top top",
+    scrub: 1.5
+  }
+});
+
+// About → Works: mesh recedes far back, out of focus behind the cards
+gsap.to(scene3d.target, {
+  x: 0,
+  z: -3.5,
+  scale: 0.5,
+  scrollTrigger: {
+    trigger: trackSection,
+    start: "top bottom",
+    end: "top top",
+    scrub: 1.5
+  }
+});
+
+// Works → Contact: mesh returns to center, hero-sized again
+gsap.to(scene3d.target, {
+  z: 0,
+  scale: 1.1,
+  scrollTrigger: {
+    trigger: "#contact",
+    start: "top bottom",
+    end: "top center",
+    scrub: 1.5
+  }
+});
