@@ -10,26 +10,58 @@
 </head>
 <body>
 
-  <!-- ============ PRELOADER ============ -->
+  <!-- ============ PRELOADER — blueprint construction sequence ============ -->
   <div class="preloader" id="preloader" aria-hidden="true">
-    <div class="preloader__curtain preloader__curtain--a"></div>
-    <div class="preloader__curtain preloader__curtain--b"></div>
-    <div class="preloader__center">
-      <!-- CUSTOMIZE_TEXT: The giant loading glyph -->
-      <span class="preloader__x">X</span>
-      <span class="preloader__tag">LOADING WORLD</span>
-    </div>
+
+    <!-- full-bleed construction guides (grid, diagonals, dotted circles) -->
+    <svg class="preloader__guides" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice">
+      <g class="guides" stroke="#ffffff" stroke-width="0.25" fill="none" opacity="0">
+        <!-- verticals / horizontals -->
+        <line x1="14" y1="-200" x2="14" y2="400"/>
+        <line x1="100" y1="-200" x2="100" y2="400" stroke-dasharray="1 2"/>
+        <line x1="186" y1="-200" x2="186" y2="400"/>
+        <line x1="-200" y1="20" x2="400" y2="20"/>
+        <line x1="-200" y1="105" x2="400" y2="105" stroke-dasharray="1 2"/>
+        <line x1="-200" y1="190" x2="400" y2="190"/>
+        <!-- diagonal construction lines extending the X strokes -->
+        <line x1="-160" y1="-184" x2="360" y2="374"/>
+        <line x1="-144" y1="-184" x2="376" y2="374"/>
+        <line x1="360" y1="-184" x2="-160" y2="374"/>
+        <line x1="376" y1="-184" x2="-144" y2="374"/>
+        <!-- dotted compass circles -->
+        <circle cx="100" cy="105" r="85" stroke-dasharray="0.5 2.5"/>
+        <circle cx="100" cy="105" r="45" stroke-dasharray="0.5 2.5"/>
+      </g>
+    </svg>
+
+    <!-- centred letter, stroke-drawn like a technical drawing -->
+    <svg class="preloader__letter" viewBox="0 0 200 210">
+      <!-- CUSTOMIZE_LOGO_PATH: swap this path to change the drawn letter -->
+      <path id="letterOuter" class="draw-path" fill="none" stroke="#ffffff" stroke-width="1.2"
+        d="M30,20 L100,95 L170,20 L186,20 L108,105 L186,190 L170,190 L100,115 L30,190 L14,190 L92,105 L14,20 Z"/>
+      <!-- inner echo of the mark, drawn slightly later -->
+      <path id="letterInner" class="draw-path" fill="none" stroke="#ffffff" stroke-width="1"
+        transform="translate(100 105) scale(0.42) translate(-100 -105)"
+        d="M30,20 L100,95 L170,20 L186,20 L108,105 L186,190 L170,190 L100,115 L30,190 L14,190 L92,105 L14,20 Z"/>
+    </svg>
+
+    <!-- monospace decode line, lower-left like a plotter annotation -->
+    <!-- CUSTOMIZE_TEXT: final decoded tagline -->
+    <p class="preloader__decode" id="decodeLine" data-final="Building worlds that move hearts and spark wonder."></p>
   </div>
 
-  <!-- ============ WEBGL LAYER (behind everything) ============ -->
+  <!-- giant word sitting BEHIND the 3D letter (z-index below canvas) -->
+  <div class="bg-word" id="bgWord" aria-hidden="true"><span></span></div>
+
+  <!-- ============ WEBGL LAYER ============ -->
   <div id="webgl" class="webgl-layer"></div>
 
   <!-- ============ HEADER ============ -->
   <header class="site-header">
-    <!-- CUSTOMIZE_TEXT: Logo mark -->
-    <a href="#top" class="logo" data-scroll-link>X.</a>
+    <!-- CUSTOMIZE_TEXT: wordmark -->
+    <a href="#top" class="logo" data-scroll-link>X STUDIO</a>
     <nav class="site-nav">
-      <!-- CUSTOMIZE_TEXT: Menu headings -->
+      <!-- CUSTOMIZE_TEXT: menu headings -->
       <a href="#works" data-scroll-link>Works</a>
       <a href="#about" data-scroll-link>About</a>
       <a href="#contact" data-scroll-link>Contact</a>
@@ -39,53 +71,36 @@
   <main id="top">
 
     <!-- ============ HERO ============ -->
-    <section class="hero" id="hero">
-      <h1 class="hero__title">
-        <!-- CUSTOMIZE_TEXT: Hero headline, one line per span -->
-        <span class="line"><span data-reveal>We build worlds</span></span>
-        <span class="line"><span data-reveal>that move people.</span></span>
+    <section class="hero" id="hero" data-bg-word="X STUDIO" data-tint="#8a8a8a">
+      <h1 class="hero__title" data-reveal>
+        <!-- CUSTOMIZE_TEXT: hero wordmark line -->
+        X STUDIO
       </h1>
-      <p class="hero__sub" data-reveal>
-        <!-- CUSTOMIZE_TEXT: Hero subline -->
-        Immersive &amp; experiential entertainment — realtime 3D, virtual venues, playable stories.
-      </p>
-      <div class="hero__scroll-hint" data-reveal>scroll to explore →</div>
+      <div class="hero__news" data-reveal>
+        <span class="hero__news-label">NEWS</span>
+        <!-- CUSTOMIZE_TEXT: news line -->
+        <span class="hero__news-item">2026 08.01 — New immersive project announced</span>
+      </div>
+      <div class="hero__scroll-hint">scroll to explore →</div>
     </section>
 
-    <!-- ============ ABOUT / VISION ============ -->
-    <section class="about" id="about">
-      <p class="about__kicker" data-reveal>VISION</p>
-      <h2 class="about__title" data-reveal>
-        <!-- CUSTOMIZE_TEXT: Vision statement -->
-        Beyond screens.<br />Into worlds.
-      </h2>
-      <p class="about__body" data-reveal>
-        <!-- CUSTOMIZE_TEXT: About paragraph -->
-        We take the raw power of realtime engines and push it past the borders of games —
-        into concerts, fashion, film and living virtual spaces. Every project is a portal:
-        crafted light, motion and sound, engineered to feel expensive and alive.
-      </p>
-    </section>
-
-    <!-- ============ HORIZONTAL FLYING PORTFOLIO TRACK ============ -->
-    <section class="portfolio-track-section" id="works">
+    <!-- ============ WORKS / HORIZONTAL TRACK ============ -->
+    <section class="portfolio-track-section" id="works" data-bg-word="WORKS" data-tint="#2233ee">
       <div class="portfolio-pin">
-        <p class="portfolio__kicker">SELECTED WORKS</p>
         <div class="portfolio-strip">
 
           <!-- CUSTOMIZE_LINK_1: Paste your Google Drive or Project Link here -->
           <a class="card" href="[example.com](https://example.com/project-one)" target="_blank" rel="noopener">
             <div class="card__media">
               <!-- CUSTOMIZE_MEDIA_1: Change path string to swap card video/image.
-                   For video, replace the <img> with:
-                   <video src="./assets/media/project-1.mp4" autoplay loop muted playsinline></video> -->
+                   For video use: <video src="./assets/media/p1.mp4" autoplay loop muted playsinline></video> -->
               <img src="[picsum.photos](https://picsum.photos/seed/x-alpha/1200/800)" alt="Project One" loading="lazy" />
             </div>
             <div class="card__meta">
-              <span class="card__index">01</span>
-              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <span class="card__date">2026 01.17</span>
+              <!-- CUSTOMIZE_TEXT: card title -->
               <h3 class="card__title">NEON RITUAL</h3>
-              <p class="card__tags">in-game concert · metaverse</p>
+              <div class="card__tags"><span>In-Game-Concert</span><span>metaverse</span></div>
             </div>
           </a>
 
@@ -96,10 +111,9 @@
               <img src="[picsum.photos](https://picsum.photos/seed/x-beta/1200/800)" alt="Project Two" loading="lazy" />
             </div>
             <div class="card__meta">
-              <span class="card__index">02</span>
-              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <span class="card__date">2025 05.16</span>
               <h3 class="card__title">VELVET ORBIT</h3>
-              <p class="card__tags">unreal engine · cloud rendering</p>
+              <div class="card__tags"><span>unreal_engine</span><span>mobile</span></div>
             </div>
           </a>
 
@@ -110,10 +124,9 @@
               <img src="[picsum.photos](https://picsum.photos/seed/x-gamma/1200/800)" alt="Project Three" loading="lazy" />
             </div>
             <div class="card__meta">
-              <span class="card__index">03</span>
-              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <span class="card__date">2025 02.20</span>
               <h3 class="card__title">GHOST RUNWAY</h3>
-              <p class="card__tags">virtual fashion · mobile</p>
+              <div class="card__tags"><span>virtual fashion</span><span>cloud rendering</span></div>
             </div>
           </a>
 
@@ -124,46 +137,47 @@
               <img src="[picsum.photos](https://picsum.photos/seed/x-delta/1200/800)" alt="Project Four" loading="lazy" />
             </div>
             <div class="card__meta">
-              <span class="card__index">04</span>
-              <!-- CUSTOMIZE_TEXT: Card title + tags -->
+              <span class="card__date">2024 10.18</span>
               <h3 class="card__title">CHROME GARDEN</h3>
-              <p class="card__tags">interactive install · webgl</p>
-            </div>
-          </a>
-
-          <!-- CUSTOMIZE_LINK_5: Paste your Google Drive or Project Link here -->
-          <a class="card" href="[example.com](https://example.com/project-five)" target="_blank" rel="noopener">
-            <div class="card__media">
-              <!-- CUSTOMIZE_MEDIA_5: Change path string to swap card video/image -->
-              <img src="[picsum.photos](https://picsum.photos/seed/x-omega/1200/800)" alt="Project Five" loading="lazy" />
-            </div>
-            <div class="card__meta">
-              <span class="card__index">05</span>
-              <!-- CUSTOMIZE_TEXT: Card title + tags -->
-              <h3 class="card__title">MIDNIGHT ENGINE</h3>
-              <p class="card__tags">playable story · fortnite</p>
+              <div class="card__tags"><span>webgl</span><span>installation</span></div>
             </div>
           </a>
 
         </div>
+        <div class="portfolio__more">More Works ↗</div>
       </div>
     </section>
 
-    <!-- ============ CONTACT / OUTRO ============ -->
-    <section class="contact" id="contact">
+    <!-- ============ ABOUT ============ -->
+    <section class="about" id="about" data-bg-word="ABOUT" data-tint="#1d5c3a">
+      <p class="about__kicker" data-reveal>VISION</p>
+      <h2 class="about__title" data-reveal>
+        <!-- CUSTOMIZE_TEXT: vision statement -->
+        Beyond screens.<br />Into worlds.
+      </h2>
+      <p class="about__body" data-reveal>
+        <!-- CUSTOMIZE_TEXT: about paragraph -->
+        We take the raw power of realtime engines and push it past the borders of games —
+        into concerts, fashion, film and living virtual spaces. Every project is a portal:
+        crafted light, motion and sound, engineered to feel alive.
+      </p>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="contact" id="contact" data-bg-word="CONTACT" data-tint="#7a2e5c">
       <p class="contact__kicker" data-reveal>CONTACT</p>
       <h2 class="contact__title" data-reveal>
-        <!-- CUSTOMIZE_TEXT: Contact headline -->
+        <!-- CUSTOMIZE_TEXT: contact headline -->
         Let's architect<br />something impossible.
       </h2>
-      <!-- CUSTOMIZE_LINK_CONTACT: Your mail address / contact destination -->
+      <!-- CUSTOMIZE_LINK_CONTACT: your mail address -->
       <a class="contact__cta" href="mailto:hello@example.com" data-reveal>hello@example.com</a>
     </section>
 
   </main>
 
   <footer class="site-footer">
-    <!-- CUSTOMIZE_TEXT: Footer line -->
+    <!-- CUSTOMIZE_TEXT: footer -->
     <span>© 2026 X Studio</span>
     <span>Crafted in realtime</span>
   </footer>
