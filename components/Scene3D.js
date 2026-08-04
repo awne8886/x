@@ -1,219 +1,214 @@
 // ================================================================
-// Scene3D — transparent full-viewport Three.js layer
-// Iridescent chrome icosahedron: idle rotation + eased mouse warp
+// Scene3D — translucent prismatic "X" inside a curved grid tunnel
+// Idle float + scroll-driven spin + per-section tint shifts
 // ================================================================
 import * as THREE from "three";
+import gsap from "gsap";
 
-// ---------------- GLSL ----------------
-const vertexShader = /* glsl */ `
-  uniform float uTime;
-  uniform vec2  uMouse;      // eased, -1..1
-  uniform float uScroll;     // 0..1 page progress
-  uniform float uDistort;    // CUSTOMIZE via constructor option
-
-  varying vec3 vNormal;
-  varying vec3 vView;
-  varying float vDisp;
-
-  // --- simplex noise (Ashima) ---
-  vec3 mod289(vec3 x){ return x - floor(x * (1.0/289.0)) * 289.0; }
-  vec4 mod289(vec4 x){ return x - floor(x * (1.0/289.0)) * 289.0; }
-  vec4 permute(vec4 x){ return mod289(((x*34.0)+1.0)*x); }
-  vec4 taylorInvSqrt(vec4 r){ return 1.79284291400159 - 0.85373472095314 * r; }
-
-  float snoise(vec3 v){
-    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-    vec3 i  = floor(v + dot(v, C.yyy));
-    vec3 x0 = v - i + dot(i, C.xxx);
-    vec3 g  = step(x0.yzx, x0.xyz);
-    vec3 l  = 1.0 - g;
-    vec3 i1 = min(g.xyz, l.zxy);
-    vec3 i2 = max(g.xyz, l.zxy);
-    vec3 x1 = x0 - i1 + C.xxx;
-    vec3 x2 = x0 - i2 + C.yyy;
-    vec3 x3 = x0 - D.yyy;
-    i = mod289(i);
-    vec4 p = permute(permute(permute(
-              i.z + vec4(0.0, i1.z, i2.z, 1.0))
-            + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-            + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-    float n_ = 0.142857142857;
-    vec3 ns = n_ * D.wyz - D.xzx;
-    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-    vec4 x_ = floor(j * ns.z);
-    vec4 y_ = floor(j - 7.0 * x_);
-    vec4 x = x_ * ns.x + ns.yyyy;
-    vec4 y = y_ * ns.x + ns.yyyy;
-    vec4 h = 1.0 - abs(x) - abs(y);
-    vec4 b0 = vec4(x.xy, y.xy);
-    vec4 b1 = vec4(x.zw, y.zw);
-    vec4 s0 = floor(b0) * 2.0 + 1.0;
-    vec4 s1 = floor(b1) * 2.0 + 1.0;
-    vec4 sh = -step(h, vec4(0.0));
-    vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
-    vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
-    vec3 p0 = vec3(a0.xy, h.x);
-    vec3 p1 = vec3(a0.zw, h.y);
-    vec3 p2 = vec3(a1.xy, h.z);
-    vec3 p3 = vec3(a1.zw, h.w);
-    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-    m = m * m;
-    return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+// ---------- GRID TUNNEL SHADERS (inside of a cylinder) ----------
+const tunnelVert = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
+`;
+
+const tunnelFrag = /* glsl */ `
+  uniform vec3 uTint;
+  uniform float uTime;
+  varying vec2 vUv;
 
   void main() {
-    // mouse proximity boosts the warp on the facing side
-    float mouseInfluence = dot(normalize(position), normalize(vec3(uMouse * 2.0, 1.0)));
-    mouseInfluence = smoothstep(-1.0, 1.0, mouseInfluence);
+    // fine grid
+    vec2 gv = vUv * vec2(48.0, 22.0);
+    vec2 d = abs(fract(gv) - 0.5);
+    float fine = smoothstep(0.46, 0.5, max(d.x, d.y));
 
-    float n = snoise(position * 1.6 + uTime * 0.25);
-    float scrollPulse = 0.5 + uScroll * 1.2;
+    // coarse panel checker (the big dark/lit blocks)
+    vec2 pv = floor(vUv * vec2(9.0, 4.0) + vec2(uTime * 0.015, 0.0));
+    float checker = mod(pv.x + pv.y, 2.0);
 
-    float disp = n * uDistort * (0.6 + mouseInfluence * 0.9) * scrollPulse;
-    vec3 newPos = position + normal * disp;
-    vDisp = disp;
+    vec3 base = uTint * (0.04 + checker * 0.10);
+    vec3 col = base + uTint * fine * 0.30;
 
-    vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
+    // vignette toward tunnel ends
+    float fade = smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.75, vUv.y);
+    gl_FragColor = vec4(col * fade, 1.0);
+  }
+`;
+
+// ---------- PRISM SHADERS (glassy, chromatic streaks) ----------
+const prismVert = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vView;
+  varying vec3 vWorld;
+  void main() {
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vWorld = wp.xyz;
     vNormal = normalize(normalMatrix * normal);
-    vView = normalize(-mvPosition.xyz);
-    gl_Position = projectionMatrix * mvPosition;
+    vec4 mv = viewMatrix * wp;
+    vView = normalize(-mv.xyz);
+    gl_Position = projectionMatrix * mv;
   }
 `;
 
-const fragmentShader = /* glsl */ `
+const prismFrag = /* glsl */ `
   uniform float uTime;
-  uniform float uScroll;
-
+  uniform vec3 uTint;
   varying vec3 vNormal;
   varying vec3 vView;
-  varying float vDisp;
-
-  // thin-film style iridescence ramp
-  vec3 iridescence(float t) {
-    return 0.5 + 0.5 * cos(6.28318 * (t + vec3(0.0, 0.33, 0.67)));
-  }
+  varying vec3 vWorld;
 
   void main() {
-    float fresnel = pow(1.0 - max(dot(vNormal, vView), 0.0), 2.2);
+    vec3 n = normalize(vNormal);
+    float fresnel = pow(1.0 - max(dot(n, normalize(vView)), 0.0), 2.0);
 
-    // hue drifts with time, scroll and surface displacement
-    float hueShift = fresnel * 0.9 + vDisp * 1.4 + uTime * 0.03 + uScroll * 0.5;
-    vec3 film = iridescence(hueShift);
+    // fake refraction: banded streaks sliding across the faces
+    float band = sin(vWorld.y * 7.0 + n.x * 9.0 + uTime * 0.5)
+               * sin(vWorld.x * 5.0 - n.y * 7.0 + uTime * 0.3);
+    float streak = smoothstep(0.55, 0.95, band * 0.5 + 0.5);
 
-    // CUSTOMIZE_3D_COLOR: base chrome tint
-    vec3 chrome = vec3(0.06, 0.07, 0.09);
-    vec3 color = mix(chrome, film, fresnel);
+    // chromatic dispersion ramp along the streaks + rim
+    vec3 spectrum = 0.5 + 0.5 * cos(6.2831 * (fresnel + vWorld.y * 0.18 + uTime * 0.02 + vec3(0.0, 0.33, 0.67)));
 
-    // hot rim glow
-    color += film * pow(fresnel, 4.0) * 1.6;
+    vec3 col = vec3(0.02);                       // glass body: near-black
+    col += vec3(0.85) * fresnel * 0.6;           // bright silvered rim
+    col += spectrum * streak * (0.35 + fresnel); // prismatic flares
+    col += uTint * 0.08;                         // pick up ambient tint
 
-    // alpha keeps the core glassy, edges solid
-    float alpha = 0.25 + fresnel * 0.75;
-    gl_FragColor = vec4(color, alpha);
+    float alpha = 0.45 + fresnel * 0.55;         // translucent core, solid edges
+    gl_FragColor = vec4(col, alpha);
   }
 `;
 
-// ---------------- CLASS ----------------
 export class Scene3D {
   constructor(container) {
     this.container = container;
-
-    // public animation target — GSAP tweens these, we apply them each frame
     this.target = { x: 0, y: 0, z: 0, scale: 1 };
-
-    this.mouse = new THREE.Vector2(0, 0);        // raw
-    this.mouseEased = new THREE.Vector2(0, 0);   // heavy-eased
+    this.mouse = new THREE.Vector2();
+    this.mouseEased = new THREE.Vector2();
+    this.scrollProgress = 0;
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(
-      45,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      100
-    );
-    this.camera.position.z = 5;
+    this.camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 100);
+    this.camera.position.z = 7;
 
     this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    this.renderer.setSize(innerWidth, innerHeight);
     container.appendChild(this.renderer.domElement);
 
-    // CUSTOMIZE_3D_DETAIL: subdivision level (higher = smoother, heavier)
-    const geometry = new THREE.IcosahedronGeometry(1.5, 96);
-
-    this.uniforms = {
-      uTime: { value: 0 },
-      uMouse: { value: this.mouseEased },
-      uScroll: { value: 0 },
-      // CUSTOMIZE_3D_DISTORT: warp amplitude of the blob surface
-      uDistort: { value: 0.35 }
+    // ---- curved grid tunnel ----
+    this.tunnelUniforms = {
+      // CUSTOMIZE_3D_TINT_DEFAULT: starting tunnel colour (neutral grey)
+      uTint: { value: new THREE.Color("#8a8a8a") },
+      uTime: { value: 0 }
     };
+    const tunnel = new THREE.Mesh(
+      new THREE.CylinderGeometry(9, 9, 26, 72, 1, true),
+      new THREE.ShaderMaterial({
+        vertexShader: tunnelVert,
+        fragmentShader: tunnelFrag,
+        uniforms: this.tunnelUniforms,
+        side: THREE.BackSide
+      })
+    );
+    tunnel.rotation.z = Math.PI / 2; // axis along the view depth
+    tunnel.rotation.y = Math.PI / 2;
+    this.scene.add(tunnel);
 
-    const material = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      uniforms: this.uniforms,
-      transparent: true
+    // ---- extruded X prism ----
+    // CUSTOMIZE_LOGO_PATH: same silhouette as the loader letter
+    const pts = [
+      [30,20],[100,95],[170,20],[186,20],[108,105],[186,190],
+      [170,190],[100,115],[30,190],[14,190],[92,105],[14,20]
+    ];
+    const shape = new THREE.Shape();
+    pts.forEach(([x, y], i) => {
+      const px = (x - 100) / 55, py = (105 - y) / 55;
+      i === 0 ? shape.moveTo(px, py) : shape.lineTo(px, py);
     });
+    shape.closePath();
 
-    this.mesh = new THREE.Mesh(geometry, material);
+    const geo = new THREE.ExtrudeGeometry(shape, {
+      depth: 0.55, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 2
+    });
+    geo.center();
+
+    this.prismUniforms = {
+      uTime: { value: 0 },
+      uTint: { value: this.tunnelUniforms.uTint.value }
+    };
+    this.mesh = new THREE.Mesh(
+      geo,
+      new THREE.ShaderMaterial({
+        vertexShader: prismVert,
+        fragmentShader: prismFrag,
+        uniforms: this.prismUniforms,
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      })
+    );
+    this.mesh.scale.setScalar(0.001); // hidden until enter()
     this.scene.add(this.mesh);
 
     this.clock = new THREE.Clock();
-
-    // resolves after the first rendered frame — preloader waits on this
-    this.ready = new Promise((resolve) => (this._resolveReady = resolve));
+    this.ready = new Promise((r) => (this._resolveReady = r));
     this._firstFrame = true;
 
-    window.addEventListener("resize", () => this.onResize());
-    window.addEventListener("pointermove", (e) => {
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -((e.clientY / window.innerHeight) * 2 - 1);
+    addEventListener("resize", () => this.onResize());
+    addEventListener("pointermove", (e) => {
+      this.mouse.set((e.clientX / innerWidth) * 2 - 1, -((e.clientY / innerHeight) * 2 - 1));
     });
 
     this.renderer.setAnimationLoop(() => this.render());
   }
 
-  setScroll(progress) {
-    this.uniforms.uScroll.value = progress;
+  // called when the preloader dissolves — prism scales up into view
+  enter() {
+    gsap.to(this.mesh.scale, { x: 1.6, y: 1.6, z: 1.6, duration: 1.6, ease: "expo.out" });
+    this.target.scale = 1;
+  }
+
+  setScroll(p) { this.scrollProgress = p; }
+
+  // per-section recolour of tunnel + prism ambient
+  setTint(hex) {
+    const c = new THREE.Color(hex);
+    const t = this.tunnelUniforms.uTint.value;
+    gsap.to(t, { r: c.r, g: c.g, b: c.b, duration: 1.4, ease: "power2.inOut" });
   }
 
   onResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.aspect = innerWidth / innerHeight;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(innerWidth, innerHeight);
   }
 
   render() {
     const t = this.clock.getElapsedTime();
-    this.uniforms.uTime.value = t;
+    this.tunnelUniforms.uTime.value = t;
+    this.prismUniforms.uTime.value = t;
 
-    // heavy easing toward raw mouse (the "expensive" lag feel)
-    // CUSTOMIZE_3D_MOUSE_EASE: lower = heavier/slower tracking
-    this.mouseEased.lerp(this.mouse, 0.045);
+    // CUSTOMIZE_3D_MOUSE_EASE: lower = heavier tracking lag
+    this.mouseEased.lerp(this.mouse, 0.05);
 
-    // idle rotation + mouse steering
-    // CUSTOMIZE_3D_SHAPE_SPEED: Adjust value to change background asset rotation velocity
-    const IDLE_SPEED = 0.12;
-    this.mesh.rotation.y = t * IDLE_SPEED + this.mouseEased.x * 0.6;
-    this.mesh.rotation.x = t * IDLE_SPEED * 0.6 + this.mouseEased.y * 0.4;
+    // CUSTOMIZE_3D_SHAPE_SPEED: idle drift + scroll-driven spin strength
+    const IDLE = 0.10;
+    const SPIN_TURNS = 3.0; // full rotations across the whole page
+    this.mesh.rotation.y = t * IDLE + this.scrollProgress * Math.PI * 2 * SPIN_TURNS + this.mouseEased.x * 0.4;
+    this.mesh.rotation.x = Math.sin(t * 0.4) * 0.08 + this.mouseEased.y * 0.25;
+    this.mesh.position.y = this.target.y + Math.sin(t * 0.8) * 0.08; // gentle float
 
-    // apply GSAP-driven framing with soft interpolation
+    // eased framing from GSAP scroll tweens
     this.mesh.position.x += (this.target.x - this.mesh.position.x) * 0.06;
-    this.mesh.position.y += (this.target.y - this.mesh.position.y) * 0.06;
-    this.mesh.position.z += (this.target.z - this.mesh.position.z) * 0.06;
-    const s = this.mesh.scale.x + (this.target.scale - this.mesh.scale.x) * 0.06;
-    this.mesh.scale.setScalar(s);
+    const s = this.mesh.scale.x + (this.target.scale * 1.6 - this.mesh.scale.x) * 0.045;
+    if (this.mesh.scale.x > 0.01) this.mesh.scale.setScalar(s);
 
     this.renderer.render(this.scene, this.camera);
 
-    if (this._firstFrame) {
-      this._firstFrame = false;
-      this._resolveReady();
-    }
+    if (this._firstFrame) { this._firstFrame = false; this._resolveReady(); }
   }
 }
-
