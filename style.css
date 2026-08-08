@@ -302,3 +302,26 @@ section {
   .site-nav { gap: 1.1rem; }
   .card { width: 76vw; }
 }
+/* ================================================================
+   CAROUSEL v2 — cards settle in the CENTER, one prominent per view
+   ================================================================ */
+.portfolio-strip {
+  /* lets the first and last card reach dead center */
+  padding-left: 50vw;
+  padding-right: 50vw;
+}
+
+.card {
+  transition: none;              /* JS drives scale/opacity per frame */
+  transform-origin: center center;
+}
+
+.card__media { filter: url(#edgeWarp); } /* warp amount is 0 at rest */
+
+.card__meta {
+  opacity: 0;                    /* only the centered card shows meta */
+  transform: translateY(12px);
+}
+
+/* liquid melt on the drawn letter during preloader exit */
+.preloader__letter { will-change: transform, filter, opacity; }
